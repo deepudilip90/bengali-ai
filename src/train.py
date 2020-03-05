@@ -6,6 +6,7 @@ import torch.nn as nn
 from dataset import BengaliDatasetTrain
 from tqdm import tqdm
 
+DEVICE = 'cuda'
 TRAINING_FOLDS_CSV = os.environ.get('TRAINING_FOLDS_CSV')
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
@@ -39,6 +40,12 @@ def train(dataset, data_loader, model, optimizer):
         vowel_diacritic = d['vowel_diacritic']
         consonant_diacritic = d['consonant_diacritic']
 
+        if torch.cuda.device_count() > 0:
+            image = image.to(DEVICE, dtype=torch.float)
+            grapheme_root = grapheme_root.to(DEVICE, dtype=torch.float)
+            vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.float)
+            consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.float)
+
         optimizer.zero_grad()
         outputs = model(image)
         targets = (grapheme_root, vowel_diacritic, consonant_diacritic)
@@ -67,7 +74,12 @@ def evaluate(dataset, data_loader, model):
 
 def main():
     model = MODEL_DISPATCHER[BASE_MODEL](pretrained=True)
-    
+    if torch.cuda.device_count() > 0:
+        print('GPU Found!!! Yay!')
+        model.to(DEVICE)
+    else:
+        print('Bleh.. continuing with CPU.. Sigh!')
+
     train_dataset = BengaliDatasetTrain(
         folds=TRAINING_FOLDS,
         img_height=IMG_HEIGHT,
@@ -100,6 +112,9 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.3, verbose=True)
+
+    # if torch.cuda.device_count() > 1:
+    #     model = nn.DataParallel(model)
 
     for epoch in range(EPOCHS):
         train(train_dataset, train_loader, model, optimizer)
