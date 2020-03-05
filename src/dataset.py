@@ -44,7 +44,8 @@ class BengaliDatasetTrain:
         image = image.reshape(137, 236).astype(float)
         image = Image.fromarray(image).convert("RGB")
         image = self.aug(image=np.array(image))['image']
-        impage = np.transpose(image, (2,0,1)).astype(np.float32)
+        image = np.transpose(image, (2,0,1)).astype(np.float32)
+
 
         return {
             'image' : torch.tensor(image, dtype=torch.float),

@@ -27,15 +27,16 @@ def loss_fn(outputs, targets):
     t1, t2, t3 = targets
     l1 = nn.CrossEntropyLoss()(o1, t1)
     l2 = nn.CrossEntropyLoss()(o2, t2)
-    l3 = nn.CrossEntropyLoss()(o3, t2)
+    l3 = nn.CrossEntropyLoss()(o3, t3)
+    return (l1 + l2 + l3)/3
     
 def train(dataset, data_loader, model, optimizer):
     model.train()
 
     for bi, d in tqdm(enumerate(data_loader), total=int(len(dataset)/data_loader.batch_size)):
         image = d['image']
-        grapheme_root = d['image']
-        vowel_diacritic = d['image']
+        grapheme_root = d['grapheme_root']
+        vowel_diacritic = d['vowel_diacritic']
         consonant_diacritic = d['consonant_diacritic']
 
         optimizer.zero_grad()
