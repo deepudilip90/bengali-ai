@@ -4,15 +4,18 @@ import joblib
 from PIL import Image
 import albumentations
 import torch
+import os
 
 class BengaliDatasetTrain:
 
-    def __init__(self, folds, img_height, img_width, mean, std):
+    def __init__(self, train_data_path, image_pkl_path, folds, img_height, img_width, mean, std):
 
-        df = pd.read_csv('../input/train_folds.csv')
+        # df = pd.read_csv('../input/train_folds.csv')
+        df = pd.read_csv(train_data_path)
         df = df[['image_id', 'grapheme_root', 'vowel_diacritic', 'consonant_diacritic', 'kfold']]
-
         df = df[df.kfold.isin(folds)].reset_index(drop=True)
+
+        self.image_pkl_path = image_pkl_path
         self.image_ids = df.image_id.values
         self.grapheme_root = df.grapheme_root.values
         self.vowel_diacritic = df.vowel_diacritic.values
@@ -40,7 +43,8 @@ class BengaliDatasetTrain:
 
     def __getitem__(self, item):
         
-        image = joblib.load(f"../input/image_pickles/{self.image_ids[item]}.pkl")
+        # image = joblib.load(f"../input/image_pickles/{self.image_ids[item]}.pkl")
+        image = joblib.load(self.image_pkl_path + os.sep + f"{self.image_ids[item]}.pkl")
         image = image.reshape(137, 236).astype(float)
         image = Image.fromarray(image).convert("RGB")
         image = self.aug(image=np.array(image))['image']

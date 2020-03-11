@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 DEVICE = 'cuda'
 TRAINING_FOLDS_CSV = os.environ.get('TRAINING_FOLDS_CSV')
+IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
 EPOCHS = int(os.environ.get('EPOCHS'))
@@ -17,10 +18,9 @@ TEST_BATCH_SIZE = int(os.environ.get('TEST_BATCH_SIZE'))
 
 MODEL_MEAN = ast.literal_eval(os.environ.get('MODEL_MEAN'))
 MODEL_STD = ast.literal_eval(os.environ.get('MODEL_STD'))
-
-TRAINING_FOLDS = ast.literal_eval(os.environ.get('TRAINING_FOLDS'))
-VALIDATION_FOLDS = ast.literal_eval(os.environ.get('VALIDATION_FOLDS'))
 BASE_MODEL = os.environ.get('BASE_MODEL')
+
+
 
 
 def loss_fn(outputs, targets):
@@ -42,9 +42,9 @@ def train(dataset, data_loader, model, optimizer):
 
         if torch.cuda.device_count() > 0:
             image = image.to(DEVICE, dtype=torch.float)
-            grapheme_root = grapheme_root.to(DEVICE, dtype=torch.float)
-            vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.float)
-            consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.float)
+            grapheme_root = grapheme_root.to(DEVICE, dtype=torch.long)
+            vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.long)
+            consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.long)
 
         optimizer.zero_grad()
         outputs = model(image)
@@ -72,7 +72,11 @@ def evaluate(dataset, data_loader, model):
     return final_loss / counter
 
 
-def main():
+def main(train_folds, valid_folds):
+
+    TRAINING_FOLDS = train_folds
+    VALIDATION_FOLDS = valid_folds
+
     model = MODEL_DISPATCHER[BASE_MODEL](pretrained=True)
     if torch.cuda.device_count() > 0:
         print('GPU Found!!! Yay!')
@@ -81,6 +85,8 @@ def main():
         print('Bleh.. continuing with CPU.. Sigh!')
 
     train_dataset = BengaliDatasetTrain(
+        train_data_path=TRAINING_FOLDS_CSV,
+        image_pkl_path=IMAGE_PKL_PATH,
         folds=TRAINING_FOLDS,
         img_height=IMG_HEIGHT,
         img_width=IMG_WIDTH,
@@ -96,6 +102,8 @@ def main():
     )
 
     valid_dataset = BengaliDatasetTrain(
+        train_data_path=TRAINING_FOLDS_CSV,
+        image_pkl_path=IMAGE_PKL_PATH,
         folds=VALIDATION_FOLDS,
         img_height=IMG_HEIGHT,
         img_width=IMG_WIDTH,
