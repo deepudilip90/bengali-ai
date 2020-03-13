@@ -83,7 +83,7 @@ def main(train_folds, valid_folds):
         model.to(DEVICE)
     else:
         print('Bleh.. continuing with CPU.. Sigh!')
-
+    print(TRAINING_FOLDS_CSV)
     train_dataset = BengaliDatasetTrain(
         train_data_path=TRAINING_FOLDS_CSV,
         image_pkl_path=IMAGE_PKL_PATH,
