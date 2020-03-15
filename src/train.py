@@ -3,12 +3,13 @@ import ast
 from models_dispatcher import MODEL_DISPATCHER
 import torch
 import torch.nn as nn
-from dataset import BengaliDatasetTrain
+# from dataset import BengaliDatasetTrain
+from dataset_hd5 import BengaliHD5DatasetTrain
 from tqdm import tqdm
 
 DEVICE = 'cuda'
-TRAINING_FOLDS_CSV = os.environ.get('TRAINING_FOLDS_CSV')
-IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
+# IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
+
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
 EPOCHS = int(os.environ.get('EPOCHS'))
@@ -19,6 +20,8 @@ TEST_BATCH_SIZE = int(os.environ.get('TEST_BATCH_SIZE'))
 MODEL_MEAN = ast.literal_eval(os.environ.get('MODEL_MEAN'))
 MODEL_STD = ast.literal_eval(os.environ.get('MODEL_STD'))
 BASE_MODEL = os.environ.get('BASE_MODEL')
+TRAINING_FOLDS_CSV = os.environ.get('TRAINING_FOLDS_CSV')
+IMAGE_H5_DATASET_PATH= os.environ.get('IMAGE_H5_DATASET_PATH')
 
 
 
@@ -83,10 +86,19 @@ def main(train_folds, valid_folds):
         model.to(DEVICE)
     else:
         print('Bleh.. continuing with CPU.. Sigh!')
-    print(TRAINING_FOLDS_CSV)
-    train_dataset = BengaliDatasetTrain(
+
+    # train_dataset = BengaliDatasetTrain(
+    #     train_data_path=TRAINING_FOLDS_CSV,
+    #     # image_pkl_path=IMAGE_PKL_PATH,
+    #     folds=TRAINING_FOLDS,
+    #     img_height=IMG_HEIGHT,
+    #     img_width=IMG_WIDTH,
+    #     mean=MODEL_MEAN,
+    #     std=MODEL_STD
+    # )
+    train_dataset = BengaliHD5DatasetTrain(
         train_data_path=TRAINING_FOLDS_CSV,
-        image_pkl_path=IMAGE_PKL_PATH,
+        image_h5_dataset_path=IMAGE_H5_DATASET_PATH,
         folds=TRAINING_FOLDS,
         img_height=IMG_HEIGHT,
         img_width=IMG_WIDTH,
@@ -98,12 +110,22 @@ def main(train_folds, valid_folds):
         dataset=train_dataset,
         batch_size=TRAIN_BATCH_SIZE,
         shuffle=True,
-        num_workers= 4
+        num_workers= 1
     )
 
-    valid_dataset = BengaliDatasetTrain(
+    # valid_dataset = BengaliDatasetTrain(
+    #     train_data_path=TRAINING_FOLDS_CSV,
+    #     image_pkl_path=IMAGE_PKL_PATH,
+    #     folds=VALIDATION_FOLDS,
+    #     img_height=IMG_HEIGHT,
+    #     img_width=IMG_WIDTH,
+    #     mean=MODEL_MEAN,
+    #     std=MODEL_STD
+    # )
+
+    valid_dataset = BengaliHD5DatasetTrain(
         train_data_path=TRAINING_FOLDS_CSV,
-        image_pkl_path=IMAGE_PKL_PATH,
+        image_h5_dataset_path=IMAGE_H5_DATASET_PATH,
         folds=VALIDATION_FOLDS,
         img_height=IMG_HEIGHT,
         img_width=IMG_WIDTH,
@@ -115,7 +137,7 @@ def main(train_folds, valid_folds):
         dataset=valid_dataset,
         batch_size=TEST_BATCH_SIZE,
         shuffle=True,
-        num_workers= 4
+        num_workers= 1
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -132,5 +154,8 @@ def main(train_folds, valid_folds):
 
 
 if __name__ == '__main__':
-    main()
+    
+    train_folds = ast.literal_eval(os.environ.get('TRAINING_FOLDS'))
+    valid_folds = ast.literal_eval(os.environ.get('VALIDATION_FOLDS'))
+    main(train_folds, valid_folds)
 
