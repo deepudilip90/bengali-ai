@@ -110,7 +110,7 @@ def main(train_folds, valid_folds):
         dataset=train_dataset,
         batch_size=TRAIN_BATCH_SIZE,
         shuffle=True,
-        num_workers= 4
+        num_workers= 1
     )
 
     # valid_dataset = BengaliDatasetTrain(
@@ -137,7 +137,7 @@ def main(train_folds, valid_folds):
         dataset=valid_dataset,
         batch_size=TEST_BATCH_SIZE,
         shuffle=True,
-        num_workers= 4
+        num_workers= 1
     )
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
