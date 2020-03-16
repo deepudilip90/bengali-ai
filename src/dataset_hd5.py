@@ -19,7 +19,8 @@ class BengaliHD5DatasetTrain:
         self.grapheme_root = df.grapheme_root.values
         self.vowel_diacritic = df.vowel_diacritic.values
         self.consonant_diacritic = df.consonant_diacritic.values
-        self.image_dataset = h5py.File(image_h5_dataset_path, "r")
+        self.image_h5_dataset_path = image_h5_dataset_path
+        # self.image_dataset = h5py.File(image_h5_dataset_path, "r")
 
         if len(folds) == 1:
        
@@ -42,7 +43,9 @@ class BengaliHD5DatasetTrain:
         return len(self.image_ids)
 
     def __getitem__(self, item):
-        image = self.image_dataset[self.image_ids[item]].value
+        file = h5py.File(self.image_h5_dataset_path, "r")
+        image = file[self.image_ids[item]].value
+        # image = self.image_dataset[self.image_ids[item]].value
         image = image.reshape(137, 236).astype(float)
         image = Image.fromarray(image).convert("RGB")
         image = self.aug(image=np.array(image))['image']
