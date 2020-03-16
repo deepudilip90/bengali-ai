@@ -12,7 +12,7 @@ def create_image_hd5(input_path, output_path):
     parquet_files = glob(input_path + 'train_*.parquet')
     parquet_files.sort()
 
-    hd5file = h5py.File(output_path + 'image_dataset.h5", "w")
+    hd5file = h5py.File(output_path + "image_dataset.h5", "w")
 
     for file in parquet_files:
         print('Now Reading from file: ', file)
