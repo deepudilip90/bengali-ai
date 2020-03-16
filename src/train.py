@@ -67,13 +67,18 @@ def evaluate(dataset, data_loader, model):
         vowel_diacritic = d['image']
         consonant_diacritic = d['consonant_diacritic']
 
+        if torch.cuda.device_count() > 0:
+            image = image.to(DEVICE, dtype=torch.float)
+            grapheme_root = grapheme_root.to(DEVICE, dtype=torch.long)
+            vowel_diacritic = vowel_diacritic.to(DEVICE, dtype=torch.long)
+            consonant_diacritic = consonant_diacritic.to(DEVICE, dtype=torch.long)
+
         outputs = model(image)
         targets = (grapheme_root, vowel_diacritic, consonant_diacritic)
         loss = loss_fn(outputs, targets)
         final_loss += loss
     
     return final_loss / counter
-
 
 def main(train_folds, valid_folds):
 
