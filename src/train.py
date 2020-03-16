@@ -63,8 +63,8 @@ def evaluate(dataset, data_loader, model):
     for bi, d in tqdm(enumerate(data_loader), total=int(len(dataset)/data_loader.batch_size)):
         counter = counter+1
         image = d['image']
-        grapheme_root = d['image']
-        vowel_diacritic = d['image']
+        grapheme_root = d['grapheme_root']
+        vowel_diacritic = d['vowel_diacritic']
         consonant_diacritic = d['consonant_diacritic']
 
         if torch.cuda.device_count() > 0:
