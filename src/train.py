@@ -153,7 +153,11 @@ def main(train_folds, valid_folds):
 
     for epoch in range(EPOCHS):
         train(train_dataset, train_loader, model, optimizer)
+        if torch.cuda.device_count() > 0:
+            torch.cuda.empty_cache()
         val_score = evaluate(valid_dataset, valid_loader, model)
+        if torch.cuda.device_count() > 0:
+            torch.cuda.empty_cache()
         scheduler.step(val_score)
         torch.save(model.state_dict(), f"{BASE_MODEL}_fold{VALIDATION_FOLDS[0]}.bin")
 
