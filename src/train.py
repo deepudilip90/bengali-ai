@@ -9,8 +9,8 @@ from tqdm import tqdm
 
 DEVICE = 'cuda'
 # IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
-MODEL_RESTART = os.environ.get('False')
-CHECKPOINT_PATH = os.environ.get('../checkpoints/')
+MODEL_RESTART = os.environ.get('MODEL_RESTART')
+CHECKPOINT_PATH = os.environ.get('CHECKPOINT_PATH')
 
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
