@@ -10,7 +10,7 @@ from tqdm import tqdm
 DEVICE = 'cuda'
 # IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
 MODEL_RESTART = os.environ.get('False')
-CHECKPOINT_PATH = int(os.environ.get('../checkpoints/')
+CHECKPOINT_PATH = os.environ.get('../checkpoints/'
 
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
@@ -183,4 +183,3 @@ if __name__ == '__main__':
     train_folds = ast.literal_eval(os.environ.get('TRAINING_FOLDS'))
     valid_folds = ast.literal_eval(os.environ.get('VALIDATION_FOLDS'))
     main(train_folds, valid_folds)
-    
