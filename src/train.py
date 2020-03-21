@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 DEVICE = 'cuda'
 # IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
-MODEL_RESTART = bool(os.environ.get('MODEL_RESTART'))
+MODEL_RESTART = int(os.environ.get('MODEL_RESTART'))
 CHECKPOINT_PATH = os.environ.get('CHECKPOINT_PATH')
 
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
@@ -90,7 +90,7 @@ def main(train_folds, valid_folds):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.3, verbose=True)
     start_epoch = 0
     print( 'Restart status is ', MODEL_RESTART)
-    if MODEL_RESTART:
+    if MODEL_RESTART==1:
         
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_dict'])
