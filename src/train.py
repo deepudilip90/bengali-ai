@@ -9,6 +9,8 @@ from tqdm import tqdm
 
 DEVICE = 'cuda'
 # IMAGE_PKL_PATH = os.environ.get('IMAGE_PKL_PATH')
+MODEL_RESTART = os.environ.get('False')
+CHECKPOINT_PATH = int(os.environ.get('../checkpoints/')
 
 IMG_HEIGHT = int(os.environ.get('IMG_HEIGHT'))
 IMG_WIDTH = int(os.environ.get('IMG_WIDTH'))
@@ -22,9 +24,6 @@ MODEL_STD = ast.literal_eval(os.environ.get('MODEL_STD'))
 BASE_MODEL = os.environ.get('BASE_MODEL')
 TRAINING_FOLDS_CSV = os.environ.get('TRAINING_FOLDS_CSV')
 IMAGE_H5_DATASET_PATH= os.environ.get('IMAGE_H5_DATASET_PATH')
-
-
-
 
 def loss_fn(outputs, targets):
     o1, o2, o3 = outputs 
@@ -80,12 +79,25 @@ def evaluate(dataset, data_loader, model):
     
     return final_loss / counter
 
+
 def main(train_folds, valid_folds):
 
     TRAINING_FOLDS = train_folds
     VALIDATION_FOLDS = valid_folds
 
     model = MODEL_DISPATCHER[BASE_MODEL](pretrained=True)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.3, verbose=True)
+    start_epoch = 0
+ 
+    if MODEL_RESTART:
+        
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_dict'])
+        scheduler = checkpoint['lr_sched']
+        start_epoch = checkpoint['epoch']
+
+   
     if torch.cuda.device_count() > 0:
         print('GPU Found!!! Yay!')
         model.to(DEVICE)
@@ -145,21 +157,25 @@ def main(train_folds, valid_folds):
         num_workers= 1
     )
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.3, verbose=True)
 
     # if torch.cuda.device_count() > 1:
     #     model = nn.DataParallel(model)
 
-    for epoch in range(EPOCHS):
+    for epoch in range(start_epoch, EPOCHS):
         train(train_dataset, train_loader, model, optimizer)
         if torch.cuda.device_count() > 0:
             torch.cuda.empty_cache()
         val_score = evaluate(valid_dataset, valid_loader, model)
+        print('val_score after ')
         if torch.cuda.device_count() > 0:
             torch.cuda.empty_cache()
         scheduler.step(val_score)
-        torch.save(model.state_dict(), f"{BASE_MODEL}_fold{VALIDATION_FOLDS[0]}.bin")
+        checkpoint = {'epoch': epoch + 1,
+                      'mode_state_dict': model.state_dict(), 
+                      'optimizer_dict': optimizer.state_dict(),
+                      'lr_sched': scheduler}
+        # torch.save(model.state_dict(), f"{BASE_MODEL}_fold{VALIDATION_FOLDS[0]}.bin")
+        torch.save(checkpoint, f"{CHECKPOINT_PATH}{BASE_MODEL}_fold{VALIDATION_FOLDS[0]}_epoch{epoch}.pth")
 
 
 if __name__ == '__main__':
@@ -167,4 +183,4 @@ if __name__ == '__main__':
     train_folds = ast.literal_eval(os.environ.get('TRAINING_FOLDS'))
     valid_folds = ast.literal_eval(os.environ.get('VALIDATION_FOLDS'))
     main(train_folds, valid_folds)
-
+    
