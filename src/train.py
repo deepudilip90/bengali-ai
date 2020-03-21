@@ -89,7 +89,7 @@ def main(train_folds, valid_folds):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=5, factor=0.3, verbose=True)
     start_epoch = 0
- 
+    print( 'Restart status is ', MODEL_RESTART)
     if MODEL_RESTART:
         
         model.load_state_dict(checkpoint['model_state_dict'])
@@ -166,7 +166,7 @@ def main(train_folds, valid_folds):
         if torch.cuda.device_count() > 0:
             torch.cuda.empty_cache()
         val_score = evaluate(valid_dataset, valid_loader, model)
-        print('val_score after ')
+        print(f"val_score after {epoch} is: {val_score}")
         if torch.cuda.device_count() > 0:
             torch.cuda.empty_cache()
         scheduler.step(val_score)
